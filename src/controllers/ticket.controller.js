@@ -4,64 +4,26 @@ import mercadopage, {
   Preference,
 } from 'mercadopago';
 import Ticket from '../models/ticket';
+import { tokenMercadoPago, urlSucces, urlPending, urlFailure, urlNotification, urlMercadoPago } from '../config'
+
+
+
 export const createTicket = async (req, res) => {
   try {
-    /*MercadoPagoConfig({
-      access_token:
-        'TEST-3068202673371206-051100-0454ac5dc73704d6959a5ce8c1d1fa57-1808839834',
-    });*/
-    const client = new MercadoPagoConfig({
-      accessToken:
-        'TEST-3068202673371206-051100-0454ac5dc73704d6959a5ce8c1d1fa57-1808839834',
-      options: { timeout: 5000, idempotencyKey: 'abc' },
+
+    const newTicket = new Ticket({
+      nameUser: req.body.nameUser,
+      lastName: req.body.lastName,
+      dni: req.body.dni,
+      email: req.body.email,
+      phone: req.body.phone,
+      codeTransaction: req.body.codeTransaction,
+      status: req.body.status,
     });
 
-    // Step 3: Initialize the API object
-    const payment = new Payment(client);
-    console.log('eeee');
-    try {
-      const result = await mercadopage.preferences.create({
-        items: [
-          {
-            title: 'Laptop',
-            unit_price: 500,
-            currency_id: 'PEN',
-            quantity: 1,
-          },
-        ],
-        notification_url: 'https://e720-190-237-16-208.sa.ngrok.io/webhook',
-        back_urls: {
-          success: 'http://localhost:3000/success',
-          // pending: "https://e720-190-237-16-208.sa.ngrok.io/pending",
-          // failure: "https://e720-190-237-16-208.sa.ngrok.io/failure",
-        },
-      });
+    const ticketSaved = await newTicket.save();
+    return res.json(ticketSaved);
 
-      console.log(result);
-
-      // res.json({ message: "Payment creted" });
-      res.json(result.body);
-
-      const newTicket = new Ticket({
-        nameUser: req.body.nameUser,
-        lastName: req.body.lastName,
-        dni: req.body.dni,
-        email: req.body.email,
-        phone: req.body.phone,
-        codeTransaction: req.body.codeTransaction,
-        status: req.body.status,
-      });
-
-      // Saving the task in the Database
-      const ticketSaved = await newTicket.save();
-
-      // Responding to the client
-      return res.json(ticketSaved);
-    } catch (error) {
-      res.status(500).json({
-        message: error.message || 'Something went wrong creating the Task',
-      });
-    }
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: 'Something goes wrong' });
@@ -81,15 +43,12 @@ export const findAllTicket = async (req, res) => {
 export const receiveWebhook = async (req, res) => {
   try {
     const payment = req.query.id;
-
-    console.log(req.query, '-**');
-    console.log(payment['id'], '/**');
     const response = await fetch(
-      `https://api.mercadopago.com/v1/payments/${payment['id']}`,
+      `${urlMercadoPago}${payment['id']}`,
       {
         method: 'GET',
         hearders: {
-          Authorization: `Bearer TEST-3068202673371206-051100-0454ac5dc73704d6959a5ce8c1d1fa57-1808839834`,
+          Authorization: `Bearer ${tokenMercadoPago}`,
         },
       }
     );
@@ -98,19 +57,6 @@ export const receiveWebhook = async (req, res) => {
       console.log('data', data);
     }
 
-    /* if (payment.type === 'payment') {
-      const data = await mercadopage.payment.findById(payment['data.id']);
-
-      let paymentStatus = payment.body.status;
-
-      console.log({ payment, paymentStatus }, '555');
-
-      console.log(data, '-*-');
-
-      res.json(data);
-    }
-
-    res.sendStatus(204);*/
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: 'Something goes wrong' });
@@ -120,7 +66,7 @@ export const receiveWebhook = async (req, res) => {
 export const createOrder = async (req, res) => {
   mercadopage.configure({
     access_token:
-      'TEST-3068202673371206-051100-0454ac5dc73704d6959a5ce8c1d1fa57-1808839834',
+      tokenMercadoPago,
   });
 
   console.log('eeee');
@@ -134,55 +80,84 @@ export const createOrder = async (req, res) => {
           quantity: 1,
         },
       ],
-      notification_url: 'https://e720-190-237-16-208.sa.ngrok.io/webhook',
+      notification_url: urlNotification,
       back_urls: {
-        success: 'https://www.youtube.com/watch?v=uXe_TxNVOkI&t=643s',
-        // pending: "https://e720-190-237-16-208.sa.ngrok.io/pending",
-        // failure: "https://e720-190-237-16-208.sa.ngrok.io/failure",
+        success: urlSucces,
+        pending: urlPending,
+        failure: urlFailure,
       },
     });
 
-    console.log(result);
 
-    // res.json({ message: "Payment creted" });
+
+    console.log(result);
     res.json(result.body);
   } catch (error) {
     return res.status(500).json({ message: 'Something goes wrong' });
   }
 };
-
 export const payment = async (req, res) => {
   const client = new MercadoPagoConfig({
-    accessToken:
-      'TEST-3068202673371206-051100-0454ac5dc73704d6959a5ce8c1d1fa57-1808839834',
+    accessToken: tokenMercadoPago,
   });
 
   const preference = new Preference(client);
+  const titleConcert = "conciertoelevateperu";
+  let idMercadoPago = 0;
 
-  preference
-    .create({
-      body: {
-        payment_methods: {
-          excluded_payment_methods: [
-            {
-              id: 'pagoefectivo_atm',
-            },
-            {
-              id: 'bancaInternet',
-            },
-          ],
-          excluded_payment_types: [],
-          installments: 1,
-        },
-        items: [
-          {
-            title: 'My product',
-            quantity: 1,
-            unit_price: 2000,
-          },
+  preference.create({
+    body: {
+      payment_methods: {
+        excluded_payment_methods: [
+          { id: 'pagoefectivo_atm' },
+          { id: 'bancaInternet' },
         ],
+        excluded_payment_types: [],
+        installments: 1,
       },
+      items: [
+        {
+          title: titleConcert,
+          quantity: req.body.quantity,
+          unit_price: req.body.price,
+        },
+      ],
+    }
+  })
+    .then(mercadoPagoResponse => {
+      idMercadoPago = mercadoPagoResponse.id;
+      console.log(mercadoPagoResponse.id, 'id');
+
+      console.log("/*********************************/");
+      console.log(mercadoPagoResponse)
+      const newTicket = new Ticket({
+        nameUser: req.body.nameUser,
+        lastName: req.body.lastName,
+        dni: req.body.dni,
+        email: req.body.email,
+        phone: req.body.phone,
+        status: "PENDING",
+        quantity: req.body.quantity,
+        price: req.body.price,
+        idMercadoPago: idMercadoPago
+      });
+
+      return newTicket.save();  // Return the promise for proper chaining
     })
-    .then(console.log)
-    .catch(console.log);
+    .then(ticketSaved => {
+      res.json(ticketSaved);  // Send the response here after saving
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).json({ error: "Internal Server Error" });
+    });
 };
+
+export const failure = async (req, res) => {
+  console.error('Internal Server Error:', error);
+  res.status(500).json({
+    error: true,
+    status: 500,
+    message: "Internal Server Error"
+  });
+}

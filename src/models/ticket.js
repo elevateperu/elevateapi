@@ -30,6 +30,18 @@ const ticketSchema = new Schema(
       type: String,
       require: true,
     },
+    quantity: {
+      type: Number,
+      require: true,
+    },
+
+    price: {
+      type: Number
+    },
+    idMercadoPago: {
+      type: String
+    }
+
   },
   {
     versionKey: false,

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import {
-  createOrder,
+
   createTicket,
   findAllTicket,
   receiveWebhook,
@@ -22,7 +22,7 @@ router.get('/', findAllTicket);
 router.get('/success', (req, res) => res.send('Success'));
 router.post('/webhook', receiveWebhook);
 
-router.post('/create-order', createOrder);
+//router.post('/create-order', createOrder);
 
 router.post('/order', payment);
 export default router;
