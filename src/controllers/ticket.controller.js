@@ -42,9 +42,11 @@ export const findAllTicket = async (req, res) => {
 
 export const receiveWebhook = async (req, res) => {
   try {
+
     const payment = req.query.id;
+    console.log(req.query, '-=-=', payment)
     const response = await fetch(
-      `${urlMercadoPago}${payment['id']}`,
+      `${urlMercadoPago}${payment}`,
       {
         method: 'GET',
         hearders: {
@@ -69,7 +71,7 @@ export const createOrder = async (req, res) => {
       tokenMercadoPago,
   });
 
-  console.log('eeee');
+
   try {
     const result = await mercadopage.preferences.create({
       items: [
@@ -122,14 +124,22 @@ export const payment = async (req, res) => {
           unit_price: req.body.price,
         },
       ],
+      auto_return:"approved",
+      notification_url: `https://6a8f-38-25-22-82.ngrok-free.app/api/webhook`,
+      back_urls: {
+        success: `https://www.mercadopago.com.pe/developers/es/docs/checkout-api/integration-test/test-cards`,
+       // pending: urlPending,
+        //sfailure: urlFailure,
+      },
+
     }
   })
     .then(mercadoPagoResponse => {
       idMercadoPago = mercadoPagoResponse.id;
-      console.log(mercadoPagoResponse.id, 'id');
+      console.log(mercadoPagoResponse, 'id');
 
       console.log("/*********************************/");
-      console.log(mercadoPagoResponse)
+     console.log(mercadoPagoResponse.sandbox_init_point)
       const newTicket = new Ticket({
         nameUser: req.body.nameUser,
         lastName: req.body.lastName,
