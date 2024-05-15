@@ -2,9 +2,10 @@ import mercadopage, {
   MercadoPagoConfig,
   Payment,
   Preference,
+  
 } from 'mercadopago';
 import Ticket from '../models/ticket';
-import { tokenMercadoPago, urlSucces, urlPending, urlFailure, urlNotification, urlMercadoPago } from '../config'
+import { tokenMercadoPago, urlSucces, urlPending, urlFailure, urlNotification, urlMercadoPago,urlApiMerchantOrders } from '../config'
 
 
 
@@ -43,25 +44,99 @@ export const findAllTicket = async (req, res) => {
 export const receiveWebhook = async (req, res) => {
   try {
 
-    const payment = req.query.id;
-    console.log(req.query, '-=-=', payment)
-    const response = await fetch(
-      `${urlMercadoPago}${payment}`,
-      {
+    console.log(req.query, '-=-=')
+  
+    if(req.query.type=="payment"){
+
+      console.log(req.query, '-=-=')
+      const payment = req.query;
+
+
+
+  
+      
+      var myHeaders = new Headers();
+      myHeaders.append("Authorization",`Bearer ${tokenMercadoPago}`);
+
+      var requestOptions = {
         method: 'GET',
-        hearders: {
-          Authorization: `Bearer ${tokenMercadoPago}`,
-        },
-      }
+        headers: myHeaders,
+        redirect: 'follow'
+      };
+    const response = await fetch(
+      `${urlMercadoPago}${payment["data.id"]}`,
+      requestOptions,
+      
     );
-    if (response.ok) {
-      const data = await response.json();
-      console.log('data', data);
+
+    const data =  await response.json();
+    
+
+   if(data.status == 'approved'){
+
+
+
+
+      fetch(`${urlApiMerchantOrders}${data.order.id}` , requestOptions)
+        .then(response => response.text())
+        .then(result => {
+          const dtaResul = JSON.parse(result)
+      
+          if(dtaResul.preference_id!=null){
+          console.log( dtaResul.preference_id, '*-*') 
+            //const ticket =  Ticket.findOne({ validate });
+            //const ticket =  Ticket.findOne({ validate });
+        //   console.log(ticket,'ticket')
+        updateTicket(dtaResul.preference_id)
+          }
+        })
+        .catch(error => console.log('error', error));
+           
+        }
+
+    res.sendStatus(200)
     }
+    
 
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: 'Something goes wrong' });
+  }
+};
+const updateTicket = async (id)=>{
+
+       
+  const result = await Ticket.updateOne(
+    { idMercadoPago: id  },
+    { status: 'PAID'  }
+);
+
+console.log(result); // Verifica si la consulta se ejecutó correctamente
+
+if (result.modifiedCount === 1) {
+    console.log('Ticket actualizado correctamente');
+
+    // Si necesitas el documento actualizado, puedes buscarlo después de la actualización
+    const updatedTicket = await Ticket.findOne({ idMercadoPago: id});
+    console.log(updatedTicket); // Documento actualizado
+} else {
+    console.log('No se encontró ningún ticket para actualizar o el estado ya estaba configurado como PAID');
+}
+    }
+
+
+export const getTicketByIdMercadoPago = async (idMercadoPago) => {
+  try {
+    console.log(idMercadoPago,'idMercadoPago')
+   // const { idMercadoPago } = req.params; // Supone que idMercadoPago se pasa como parámetro en la URL
+    const ticket = await Ticket.findOne({ idMercadoPago });
+console.log(ticket)
+
+  
+    res.json(ticket);
+  } catch (error) {
+    console.log(error)
+    //res.status(500).json({ message: 'Server error', error });
   }
 };
 
@@ -125,7 +200,7 @@ export const payment = async (req, res) => {
         },
       ],
       auto_return:"approved",
-      notification_url: `https://6a8f-38-25-22-82.ngrok-free.app/api/webhook`,
+      notification_url: `https://6373-38-25-22-82.ngrok-free.app/api/webhook`,
       back_urls: {
         success: `https://www.mercadopago.com.pe/developers/es/docs/checkout-api/integration-test/test-cards`,
        // pending: urlPending,
@@ -136,7 +211,7 @@ export const payment = async (req, res) => {
   })
     .then(mercadoPagoResponse => {
       idMercadoPago = mercadoPagoResponse.id;
-      console.log(mercadoPagoResponse, 'id');
+      console.log(mercadoPagoResponse.id, 'id');
 
       console.log("/*********************************/");
      console.log(mercadoPagoResponse.sandbox_init_point)
