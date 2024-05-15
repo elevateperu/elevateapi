@@ -114,9 +114,7 @@ const updateTicket = async (id)=>{
 console.log(result); // Verifica si la consulta se ejecutó correctamente
 
 if (result.modifiedCount === 1) {
-    console.log('Ticket actualizado correctamente');
 
-    // Si necesitas el documento actualizado, puedes buscarlo después de la actualización
     const updatedTicket = await Ticket.findOne({ idMercadoPago: id});
     console.log(updatedTicket); // Documento actualizado
 } else {
@@ -127,16 +125,11 @@ if (result.modifiedCount === 1) {
 
 export const getTicketByIdMercadoPago = async (idMercadoPago) => {
   try {
-    console.log(idMercadoPago,'idMercadoPago')
-   // const { idMercadoPago } = req.params; // Supone que idMercadoPago se pasa como parámetro en la URL
-    const ticket = await Ticket.findOne({ idMercadoPago });
-console.log(ticket)
 
-  
+    const ticket = await Ticket.findOne({ idMercadoPago });
     res.json(ticket);
   } catch (error) {
     console.log(error)
-    //res.status(500).json({ message: 'Server error', error });
   }
 };
 
