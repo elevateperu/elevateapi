@@ -22,7 +22,7 @@ router.get('/', findAllTicket);
 
 router.get('/success', (req, res) => res.send('Success'));
 router.post('/webhook', receiveWebhook);
-router.post('/getTicketByIdMercadoPago', getTicketByIdMercadoPago)
+router.get('/getTicketByIdMercadoPago', getTicketByIdMercadoPago)
 
 //router.post('/create-order', createOrder);
 

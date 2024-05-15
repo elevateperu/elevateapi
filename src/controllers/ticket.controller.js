@@ -72,27 +72,22 @@ export const receiveWebhook = async (req, res) => {
     const data =  await response.json();
     
 
-   if(data.status == 'approved'){
-
-
-
-
+   //if(data.status == 'approved'){
       fetch(`${urlApiMerchantOrders}${data.order.id}` , requestOptions)
         .then(response => response.text())
         .then(result => {
           const dtaResul = JSON.parse(result)
       
           if(dtaResul.preference_id!=null){
-          console.log( dtaResul.preference_id, '*-*') 
-            //const ticket =  Ticket.findOne({ validate });
-            //const ticket =  Ticket.findOne({ validate });
-        //   console.log(ticket,'ticket')
-        updateTicket(dtaResul.preference_id)
+          console.log( dtaResul.preference_id, '*-*',data.status) 
+        
+        updateTicket(dtaResul.preference_id, data.status)
           }
         })
         .catch(error => console.log('error', error));
            
-        }
+        //}
+       
 
     res.sendStatus(200)
     }
@@ -103,12 +98,12 @@ export const receiveWebhook = async (req, res) => {
     return res.status(500).json({ message: 'Something goes wrong' });
   }
 };
-const updateTicket = async (id)=>{
+const updateTicket = async (id, status)=>{
 
        
   const result = await Ticket.updateOne(
     { idMercadoPago: id  },
-    { status: 'PAID'  }
+    { status: status  }
 );
 
 console.log(result); // Verifica si la consulta se ejecutó correctamente
@@ -123,9 +118,11 @@ if (result.modifiedCount === 1) {
     }
 
 
-export const getTicketByIdMercadoPago = async (idMercadoPago) => {
+export const getTicketByIdMercadoPago = async (req, res) => {
   try {
 
+    const idMercadoPago =req.body.idMercadoPago;
+    console.log(idMercadoPago,'idMercadoPago')
     const ticket = await Ticket.findOne({ idMercadoPago });
     res.json(ticket);
   } catch (error) {
@@ -193,11 +190,11 @@ export const payment = async (req, res) => {
         },
       ],
       auto_return:"approved",
-      notification_url: `https://6373-38-25-22-82.ngrok-free.app/api/webhook`,
+      notification_url: urlNotification,
       back_urls: {
-        success: `https://www.mercadopago.com.pe/developers/es/docs/checkout-api/integration-test/test-cards`,
-       // pending: urlPending,
-        //sfailure: urlFailure,
+        success: urlSucces,
+        pending: urlPending,
+        sfailure: urlFailure,
       },
 
     }

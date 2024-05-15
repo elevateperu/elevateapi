@@ -3,8 +3,8 @@ import { mongodbURL } from './config.js';
 (async () => {
   try {
     const db = await mongoose.connect(mongodbURL, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,// Importante para que findOneAndUpdate funcione correctamente
+      //useNewUrlParser: true,
+     // useUnifiedTopology: true,// Importante para que findOneAndUpdate funcione correctamente
     });
     console.log('Connected to MongoDB');
   } catch (error) {
