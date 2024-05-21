@@ -6,8 +6,7 @@ import mercadopage, {
 } from 'mercadopago';
 import Ticket from '../models/ticket';
 import { tokenMercadoPago, urlSucces, urlPending, urlFailure, urlNotification, urlMercadoPago,urlApiMerchantOrders } from '../config'
-
-
+import crypto from 'crypto';
 
 export const createTicket = async (req, res) => {
   try {
@@ -81,6 +80,7 @@ export const receiveWebhook = async (req, res) => {
           if(dtaResul.preference_id!=null){
           console.log( dtaResul.preference_id, '*-*',data.status) 
         
+
         updateTicket(dtaResul.preference_id, data.status)
           }
         })
@@ -122,8 +122,22 @@ export const getTicketByIdMercadoPago = async (req, res) => {
   try {
 
     const idMercadoPago =req.body.idMercadoPago;
-    console.log(idMercadoPago,'idMercadoPago')
+  
     const ticket = await Ticket.findOne({ idMercadoPago });
+    const countTickets = genereTicketId(ticket.quantity);
+    const result = await Ticket.updateOne(
+      { idMercadoPago: idMercadoPago  },
+      { tickets: countTickets  });
+  
+  console.log(result); // Verifica si la consulta se ejecutó correctamente
+  
+  if (result.modifiedCount === 1) {
+  
+      const updatedTicket = await Ticket.findOne({ idMercadoPago: ticket.idMercadoPago});
+      console.log(updatedTicket, '===='); // Documento actualizado
+  }
+
+
     res.json(ticket);
   } catch (error) {
     console.log(error)
@@ -236,8 +250,11 @@ export const failure = async (req, res) => {
     message: "Internal Server Error"
   });
 }
-const genereTicketId = ( numberTicket:Number ) => {
-
-
-    const id = crypto.randomBytes(8).toString('hex');
+const genereTicketId = ( numberTicket ) => {
+  const tickets = {};
+  for (let i = 1; i <= numberTicket; i++) {
+      const id = crypto.randomBytes(8).toString('hex');
+      tickets[`ticket_${i}`] = id;
+  }
+  return tickets;
 }

@@ -40,6 +40,9 @@ const ticketSchema = new Schema(
     },
     idMercadoPago: {
       type: String
+    },
+    tickets : {
+      type :Object
     }
 
   },
