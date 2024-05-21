@@ -236,3 +236,8 @@ export const failure = async (req, res) => {
     message: "Internal Server Error"
   });
 }
+const genereTicketId = ( numberTicket:Number ) => {
+
+
+    const id = crypto.randomBytes(8).toString('hex');
+}
