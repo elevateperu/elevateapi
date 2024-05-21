@@ -251,10 +251,35 @@ export const failure = async (req, res) => {
   });
 }
 const genereTicketId = ( numberTicket ) => {
-  const tickets = {};
+
+  console.log(numberTicket,'numberTicket')
+  let tickets = [];
   for (let i = 1; i <= numberTicket; i++) {
       const id = crypto.randomBytes(8).toString('hex');
-      tickets[`ticket_${i}`] = id;
+      tickets.push({ ticketId: id });  
+      //tickets.push({ [`ticket${i}`]: id });
   }
+  console.log(tickets,'========/////===')
   return tickets;
+}
+
+export const validateTicket = async (req, res) => {
+  try {
+    const ticketId = req.body.id;  // Recibiendo el ticket ID del cuerpo de la solicitud
+    console.log(ticketId, 'Received Ticket ID');
+
+    // Realizar la búsqueda del ticket en la base de datos
+    const result = await Ticket.findOne({ 'tickets.ticketId': ticketId });
+    console.log(result, 'Search Result');
+
+    // Verificar si se encontró algún resultado
+    if (result) {
+        return res.status(200).json({ message: "Ticket válido." });
+    } else {
+        return res.status(404).json({ message: "Ticket no válido." });
+    }
+  }
+  catch{
+
+  }
 }

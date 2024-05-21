@@ -5,7 +5,8 @@ import {
   findAllTicket,
   receiveWebhook,
   payment,
-  getTicketByIdMercadoPago
+  getTicketByIdMercadoPago, 
+  validateTicket
 } from '../controllers/ticket.controller';
 
 const router = Router();
@@ -23,6 +24,8 @@ router.get('/', findAllTicket);
 router.get('/success', (req, res) => res.send('Success'));
 router.post('/webhook', receiveWebhook);
 router.get('/getTicketByIdMercadoPago', getTicketByIdMercadoPago)
+router.get('/getTicketById', validateTicket)
+
 
 //router.post('/create-order', createOrder);
 
