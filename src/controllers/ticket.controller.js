@@ -5,7 +5,7 @@ import mercadopage, {
   
 } from 'mercadopago';
 import Ticket from '../models/ticket';
-import { tokenMercadoPago, urlSucces, urlPending, urlFailure, urlNotification, urlMercadoPago,urlApiMerchantOrders } from '../config'
+import { tokenMercadoPago, urlSucces, urlPending, urlFailure, urlNotification, urlMercadoPago,urlApiMerchantOrders , price} from '../config'
 import crypto from 'crypto';
 
 export const createTicket = async (req, res) => {
@@ -43,17 +43,11 @@ export const findAllTicket = async (req, res) => {
 export const receiveWebhook = async (req, res) => {
   try {
 
-    console.log(req.query, '-=-=')
-  
+
     if(req.query.type=="payment"){
 
-      console.log(req.query, '-=-=')
       const payment = req.query;
-
-
-
-  
-      
+     
       var myHeaders = new Headers();
       myHeaders.append("Authorization",`Bearer ${tokenMercadoPago}`);
 
@@ -98,15 +92,13 @@ export const receiveWebhook = async (req, res) => {
     return res.status(500).json({ message: 'Something goes wrong' });
   }
 };
-const updateTicket = async (id, status)=>{
-
-       
+const updateTicket = async (id, status)=>{     
   const result = await Ticket.updateOne(
     { idMercadoPago: id  },
     { status: status  }
 );
 
-console.log(result); // Verifica si la consulta se ejecutó correctamente
+
 
 if (result.modifiedCount === 1) {
 
@@ -121,24 +113,31 @@ if (result.modifiedCount === 1) {
 export const getTicketByIdMercadoPago = async (req, res) => {
   try {
 
-    const idMercadoPago =req.body.idMercadoPago;
+    console.log(req.body.id, '/ooo')
+    const idMercadoPago =req.body.id;
   
-    const ticket = await Ticket.findOne({ idMercadoPago });
-    const countTickets = genereTicketId(ticket.quantity);
-    const result = await Ticket.updateOne(
-      { idMercadoPago: idMercadoPago  },
-      { tickets: countTickets  });
-  
-  console.log(result); // Verifica si la consulta se ejecutó correctamente
-  
-  if (result.modifiedCount === 1) {
-  
-      const updatedTicket = await Ticket.findOne({ idMercadoPago: ticket.idMercadoPago});
-      console.log(updatedTicket, '===='); // Documento actualizado
+    const ticket = await Ticket.findOne({ _id:idMercadoPago });
+    console.log(ticket)
+
+    if(ticket.tickets.length <= 0){
+        const countTickets = genereTicketId(ticket.quantity);
+
+        const result = await Ticket.updateOne(
+          { idMercadoPago: ticket.idMercadoPago  },
+          { tickets: countTickets  });
+
+          const updatedTicket = await Ticket.findOne({ idMercadoPago: ticket.idMercadoPago});
+          console.log(updatedTicket, '////')
+         return  res.json(updatedTicket);
+    }
+  else{
+    return res.json(ticket);
+
   }
 
 
-    res.json(ticket);
+
+   
   } catch (error) {
     console.log(error)
   }
@@ -163,7 +162,7 @@ export const createOrder = async (req, res) => {
       ],
       notification_url: urlNotification,
       back_urls: {
-        success: urlSucces,
+        success: `${urlSucces}=`,
         pending: urlPending,
         failure: urlFailure,
       },
@@ -186,6 +185,22 @@ export const payment = async (req, res) => {
   const titleConcert = "conciertoelevateperu";
   let idMercadoPago = 0;
 
+  const newTicket = new Ticket({
+    nameUser: req.body.nameUser,
+    lastName: req.body.lastName,
+    dni: req.body.dni,
+    email: req.body.email,
+    phone: req.body.phone,
+    status: "PENDING",
+    quantity: req.body.quantity,
+    price: price, //req.body.price,
+    idMercadoPago: idMercadoPago
+  });
+
+   newTicket.save();  
+
+  console.log( newTicket._id.toString(), '=====----===--')
+const idTicket = newTicket._id.toString()
   preference.create({
     body: {
       payment_methods: {
@@ -206,42 +221,43 @@ export const payment = async (req, res) => {
       auto_return:"approved",
       notification_url: urlNotification,
       back_urls: {
-        success: urlSucces,
+        success: `${urlSucces}=${idTicket}`,
         pending: urlPending,
         sfailure: urlFailure,
       },
 
     }
   })
-    .then(mercadoPagoResponse => {
+    .then(async (mercadoPagoResponse) => {
       idMercadoPago = mercadoPagoResponse.id;
-      console.log(mercadoPagoResponse.id, 'id');
-
-      console.log("/*********************************/");
-     console.log(mercadoPagoResponse.sandbox_init_point)
-      const newTicket = new Ticket({
-        nameUser: req.body.nameUser,
-        lastName: req.body.lastName,
-        dni: req.body.dni,
-        email: req.body.email,
-        phone: req.body.phone,
-        status: "PENDING",
-        quantity: req.body.quantity,
-        price: req.body.price,
-        idMercadoPago: idMercadoPago
-      });
-
-      return newTicket.save();  // Return the promise for proper chaining
-    })
-    .then(ticketSaved => {
-      res.json(ticketSaved);  // Send the response here after saving
+      console.log(mercadoPagoResponse, '---=')
+      if(mercadoPagoResponse.id != ''){
+        const result = await Ticket.updateOne(
+          { _id: idTicket },
+          { $set: { idMercadoPago: idMercadoPago } }
+      );
+          
+      console.log(result.nModified , 'nModified')
+          const updatedTicket =  await   Ticket.findById(idTicket); //Ticket.findOne({ _id : idTicket});   
+          console.log(updatedTicket, 'updatedTicket====') 
+          res.json(updatedTicket);  
+      }
+else{
+  res.status(500).json({ error: "Internal Server Error" });
+}
+    //  res.json(newTicket)
     })
     .catch(error => {
       console.log(error);
       res.status(500).json({ error: "Internal Server Error" });
     });
-};
 
+  
+};
+const updateTicketMercadoPagoId = async ( idMercadoPago,idTicket )=>{
+ 
+  
+}
 export const failure = async (req, res) => {
   console.error('Internal Server Error:', error);
   res.status(500).json({
@@ -256,7 +272,7 @@ const genereTicketId = ( numberTicket ) => {
   let tickets = [];
   for (let i = 1; i <= numberTicket; i++) {
       const id = crypto.randomBytes(8).toString('hex');
-      tickets.push({ ticketId: id });  
+      tickets.push({ ticketId: id ,incomeStatus:false });  
       //tickets.push({ [`ticket${i}`]: id });
   }
   console.log(tickets,'========/////===')

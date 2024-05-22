@@ -42,7 +42,9 @@ const ticketSchema = new Schema(
       type: String
     },
     tickets: [{
-      ticketId: { type: String }  // Cambio aquí para simplemente almacenar un String
+      ticketId: { type: String },
+      incomeStatus: {type:Boolean}
+        // Cambio aquí para simplemente almacenar un String
     }],
 
   },
