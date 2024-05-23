@@ -182,7 +182,7 @@ export const payment = async (req, res) => {
   });
 
   const preference = new Preference(client);
-  const titleConcert = "conciertoelevateperu";
+  const titleConcert = "Priscilla Bueno Tour 2024 - Lima, Perú";
   let idMercadoPago = 0;
 
   const newTicket = new Ticket({
