@@ -113,8 +113,8 @@ if (result.modifiedCount === 1) {
 export const getTicketByIdMercadoPago = async (req, res) => {
   try {
 
-    console.log(req.body.id, '/ooo')
-    const idMercadoPago =req.body.id;
+    console.log(req.parms.id, '/ooo')
+    const idMercadoPago =req.query.id;
   
     const ticket = await Ticket.findOne({ _id:idMercadoPago });
     console.log(ticket)
