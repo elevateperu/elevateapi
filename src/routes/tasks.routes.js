@@ -6,7 +6,8 @@ import {
   receiveWebhook,
   payment,
   getTicketByIdMercadoPago, 
-  validateTicket
+  validateTicket,
+  deleteColection
 } from '../controllers/ticket.controller';
 
 
@@ -21,13 +22,15 @@ router.get('/hola', (req, res) => {
 });
 //console.log('post');
 router.post('/ticket', verifyToken, createTicket);
-router.get('/', verifyToken, findAllTicket);
+router.get('/',  findAllTicket);
 
 router.get('/success', (req, res) => res.send('Success'));
 router.post('/webhook', receiveWebhook);
 router.get('/getTicketByIdMercadoPago', getTicketByIdMercadoPago)
 router.get('/getTicketById', validateTicket)
 
+
+//router.get('/deleteColection',verifyToken, deleteColection)
 
 //router.post('/create-order', createOrder);
 

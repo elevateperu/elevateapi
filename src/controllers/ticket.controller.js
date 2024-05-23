@@ -299,3 +299,10 @@ export const validateTicket = async (req, res) => {
 
   }
 }
+
+
+export const deleteColection = async (req, res)=>{
+  const result = await Ticket.deleteMany({});
+  res.status(200).send({ message: 'Todos los tickets han sido eliminados', count: result.deletedCount });
+
+}
