@@ -8,6 +8,8 @@ import {
   checkExistingUser,
 } from "../middlewares/verifySignup.js";
 
+
+
 const router = Router();
 
 router.use((req, res, next) => {

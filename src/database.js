@@ -1,5 +1,8 @@
 import mongoose from 'mongoose';
 import { mongodbURL } from './config.js';
+
+import "./libs/initialSetup.js";
+
 (async () => {
   try {
     const db = await mongoose.connect(mongodbURL, {
