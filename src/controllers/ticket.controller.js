@@ -33,19 +33,7 @@ export const createTicket = async (req, res) => {
     
        newTicket.save();  
        return  res.json(newTicket);
-    /*
-    const newTicket = new Ticket({
-      nameUser: req.body.nameUser,
-      lastName: req.body.lastName,
-      dni: req.body.dni,
-      email: req.body.email,
-      phone: req.body.phone,
-      codeTransaction: req.body.codeTransaction,
-      status: req.body.status,
-    });
-
-    const ticketSaved = await newTicket.save();
-    return res.json(ticketSaved);*/
+ 
 
   } catch (error) {
     console.log(error);
@@ -58,7 +46,7 @@ export const findAllTicket = async (req, res) => {
     res.json(data);
   } catch (error) {
     res.status(500).send({
-      message: err.message || 'Some error occurred while retrieving tutorials.',
+      message: error,
     });
   }
 };
@@ -268,7 +256,7 @@ else{
     })
     .catch(error => {
       console.log(error);
-      res.status(500).json({ error: "Internal Server Error" });
+      res.status(500).json({ error: error });
     });
 
   
@@ -316,9 +304,9 @@ export const validateTicket = async (req, res) => {
   }
 }
 
-
+/*
 export const deleteColection = async (req, res)=>{
   const result = await Ticket.deleteMany({});
   res.status(200).send({ message: 'Todos los tickets han sido eliminados', count: result.deletedCount });
 
-}
+}*/
