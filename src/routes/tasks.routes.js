@@ -11,7 +11,7 @@ import {
 } from '../controllers/ticket.controller';
 
 
-import { verifyToken, isModerator, isAdmin } from "../middlewares/authJwt.js";
+//import { verifyToken, isModerator, isAdmin } from "../middlewares/authJwt.js";
 const router = Router();
 router.get('/mercadoPago', (req, res) => {
   res.send('MERCADOPAGO');
@@ -21,7 +21,7 @@ router.get('/hola', (req, res) => {
   res.json('saving');
 });
 //console.log('post');
-router.post('/ticket', verifyToken, createTicket);
+router.post('/ticket', createTicket);
 router.get('/',  findAllTicket);
 
 router.get('/success', (req, res) => res.send('Success'));

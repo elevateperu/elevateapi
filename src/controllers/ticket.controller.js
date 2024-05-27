@@ -11,6 +11,29 @@ import crypto from 'crypto';
 export const createTicket = async (req, res) => {
   try {
 
+  
+
+
+
+      const countTickets = genereTicketId(req.body.quantity);
+
+       const newTicket = new Ticket({
+        nameUser: req.body.nameUser,
+        lastName: req.body.lastName,
+        dni: req.body.dni,
+        email: req.body.email,
+        phone: req.body.phone,
+        status: "PAGADO",
+        quantity: req.body.quantity,
+        price: price, //req.body.price,
+       // idMercadoPago: idMercadoPago,
+        codeTransaction: req.body.codeTransaction,
+        tickets: countTickets  
+      });
+    
+       newTicket.save();  
+       return  res.json(newTicket);
+    /*
     const newTicket = new Ticket({
       nameUser: req.body.nameUser,
       lastName: req.body.lastName,
@@ -22,7 +45,7 @@ export const createTicket = async (req, res) => {
     });
 
     const ticketSaved = await newTicket.save();
-    return res.json(ticketSaved);
+    return res.json(ticketSaved);*/
 
   } catch (error) {
     console.log(error);
@@ -98,12 +121,8 @@ const updateTicket = async (id, status)=>{
     { status: status  }
 );
 
-
-
 if (result.modifiedCount === 1) {
-
     const updatedTicket = await Ticket.findOne({ idMercadoPago: id});
-    console.log(updatedTicket); // Documento actualizado
 } else {
     console.log('No se encontró ningún ticket para actualizar o el estado ya estaba configurado como PAID');
 }
@@ -127,7 +146,6 @@ export const getTicketByIdMercadoPago = async (req, res) => {
           { tickets: countTickets  });
 
           const updatedTicket = await Ticket.findOne({ idMercadoPago: ticket.idMercadoPago});
-          console.log(updatedTicket, '////')
          return  res.json(updatedTicket);
     }
   else{
@@ -181,6 +199,7 @@ export const payment = async (req, res) => {
     accessToken: tokenMercadoPago,
   });
 
+  console.log(client, '/////')
   const preference = new Preference(client);
   const titleConcert = "Priscilla Bueno Tour 2024 - Lima, Perú";
   let idMercadoPago = 0;
@@ -254,10 +273,7 @@ else{
 
   
 };
-const updateTicketMercadoPagoId = async ( idMercadoPago,idTicket )=>{
- 
-  
-}
+
 export const failure = async (req, res) => {
   console.error('Internal Server Error:', error);
   res.status(500).json({
